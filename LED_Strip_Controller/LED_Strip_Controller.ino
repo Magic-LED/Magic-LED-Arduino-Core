@@ -1,17 +1,18 @@
-#define MaxFlashColorsSize 10
-#define MaxColorSize 3
+#define MaxFlashColorsSize 9
+#define MaxColorSize 4
 #define commandLength 5
 char command[commandLength];
 boolean CommandComplete;
 int pwm;
+int alpha;
 int FadeDelay = 20;
-int FlashDelay = 100;
+int FlashSpeed = 100;
 boolean isfading = 0;
 boolean isflashing = 0;
 int redVal;
 int blueVal;
 int greenVal;
-int RGBpins[MaxColorSize] = {3, 5, 6}; //{red,green,blue}
+int RGBpins[MaxColorSize] = {3, 5, 6, 9}; //{red,green,blue}
 int red[MaxColorSize] = {255,0,0}; //{red,green,blue}
 int green[MaxColorSize] = {0,255,0};
 int blue[MaxColorSize] = {0,0,255};
@@ -23,13 +24,14 @@ int yellow[MaxColorSize] = {255,255,0};
 int white[MaxColorSize] = {255,255,255};
 int black[MaxColorSize] = {0,0,0};
 
-int* FlashColors[MaxFlashColorsSize] = {red, green, blue, orange, pink, purple, teal, yellow, white, black};
-boolean SetFlashColors[MaxFlashColorsSize] = {0,0,0,0,0,0,0,0,0,0};
+//0=red,1=orange,2=yellow,3=green,4=teal,5=blue,6=purple,7=pink,8=white
+int* FlashColors[MaxFlashColorsSize] = {red, orange, yellow, green, teal, blue, purple, pink, white};
+int SetFlashColors[MaxFlashColorsSize] = {1,0,0,1,0,1,0,0,0};
 
 
 void setup(){
   Serial.begin(115200);
-  for(int i = 0; i < 3; i++){
+  for(int i = 0; i < MaxColorSize; i++){
     pinMode(RGBpins[i], OUTPUT);
   }
 }
@@ -78,10 +80,11 @@ void Fade(){
 
 void Flash(){
   if(isflashing == 1){
-    for(int i = 0; i < MaxFlashColorsSize;){
+    for(int i = 0; i < MaxFlashColorsSize; i++){
+      if(SetFlashColors[i] == 1){
         SetColor(FlashColors[i]);
-        delay(FlashDelay); 
-        i++;      
+        delay(FlashSpeed);  
+      } 
     }
   }
 }
@@ -99,7 +102,14 @@ void loop(){
     }
     
     if(command[0] == 'F' && command[1] == 'S'){
-      FlashDelay = (command[2] - 48)*100 + (command[3] - 48)*10 + (command[4] - 48);
+      FlashSpeed = (command[2] - 48)*100 + (command[3] - 48)*10 + (command[4] - 48);
+    }
+    
+    if(command[0] == 'F' && command[1] == 'C'){
+      int Position = (command[2] - 48)*10 + (command[3] - 48);
+      SetFlashColors[Position] = (command[4] - 48);
+      for(int i = 0; i < MaxFlashColorsSize; i++){Serial.print(SetFlashColors[i]);}
+      Serial.print('\n');
     }
 
     if(command[0] == 'T' && command[1] == 'E'){
@@ -165,9 +175,14 @@ void loop(){
       pwm = (command[2] - 48)*100 + (command[3] - 48)*10 + (command[4] - 48);
       analogWrite(RGBpins[2], pwm);
     }
+    if(command[0] == 'a' && command[1] == 'l'){
+      alpha = (command[2] - 48)*100 + (command[3] - 48)*10 + (command[4] - 48);
+      analogWrite(RGBpins[3], alpha);
+    }
+    
 
 
-    Serial.print("OK");
+    Serial.print("DTR-OK");Serial.print('\n');
     Serial.flush();
     delay(10);
   }
