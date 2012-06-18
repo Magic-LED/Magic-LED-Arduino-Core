@@ -12,7 +12,7 @@ boolean isflashing = 0;
 int redVal;
 int blueVal;
 int greenVal;
-int RGBpins[MaxColorSize] = {3, 5, 6, 9}; //{red,green,blue}
+int RGBpins[MaxColorSize] = {3, 5, 6, 9}; //{red,green,blue,alpha}
 int red[MaxColorSize] = {255,0,0}; //{red,green,blue}
 int green[MaxColorSize] = {0,255,0};
 int blue[MaxColorSize] = {0,0,255};
